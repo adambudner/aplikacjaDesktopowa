@@ -15,7 +15,7 @@ class WypozyczalniaGier:
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 tytul TEXT NOT NULL,
                 platforma TEXT NOT NULL,
-                czy_dostepna INTEGER DEFAULT 1
+                ilosc INTEGER DEFAULT 1
             )
         ''')
         
@@ -35,13 +35,18 @@ class WypozyczalniaGier:
         self.cursor.execute('INSERT INTO gry (tytul, platforma) VALUES (?, ?)', (tytul, platforma))
         self.conn.commit()
         return True, f"Dodano grę: {tytul} ({platforma})"
+    
+    def dodaj_gre_z_iloscia(self, tytul, platforma, ilosc):
+        self.cursor.execute('INSERT INTO gry (tytul, platforma, ilosc) VALUES (?, ?, ?)', (tytul, platforma, ilosc))
+        self.conn.commit()
+        return True, f"Dodano grę: {tytul} ({platforma}) z ilością {ilosc}"
 
     def pobierz_dostepne_gry(self):
-        self.cursor.execute('SELECT id, tytul, platforma FROM gry WHERE czy_dostepna = 1')
+        self.cursor.execute('SELECT id, tytul, platforma, ilosc FROM gry WHERE ilosc > 0')
         return self.cursor.fetchall()
 
     def wypozycz_gre(self, imie_klienta, id_gry):
-        self.cursor.execute('SELECT czy_dostepna, tytul FROM gry WHERE id = ?', (id_gry,))
+        self.cursor.execute('SELECT ilosc, tytul FROM gry WHERE id = ?', (id_gry,))
         wynik = self.cursor.fetchone()
         
         if not wynik:
@@ -51,7 +56,7 @@ class WypozyczalniaGier:
             
         data_wypozyczenia = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         
-        self.cursor.execute('UPDATE gry SET czy_dostepna = 0 WHERE id = ?', (id_gry,))
+        self.cursor.execute('UPDATE gry SET ilosc = ilosc - 1 WHERE id = ?', (id_gry,))
         self.cursor.execute('''
             INSERT INTO wypozyczenia (id_gry, imie_klienta, data_wypozyczenia) 
             VALUES (?, ?, ?)
@@ -61,7 +66,7 @@ class WypozyczalniaGier:
         return True, f"Sukces: {imie_klienta} wypożyczył/a grę '{wynik[1]}'."
 
     def zwroc_gre(self, id_gry):
-        self.cursor.execute('SELECT czy_dostepna FROM gry WHERE id = ?', (id_gry,))
+        self.cursor.execute('SELECT ilosc FROM gry WHERE id = ?', (id_gry,))
         wynik = self.cursor.fetchone()
         
         if not wynik:
@@ -71,7 +76,7 @@ class WypozyczalniaGier:
             
         data_zwrotu = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         
-        self.cursor.execute('UPDATE gry SET czy_dostepna = 1 WHERE id = ?', (id_gry,))
+        self.cursor.execute('UPDATE gry SET ilosc = ilosc + 1 WHERE id = ?', (id_gry,))
         self.cursor.execute('''
             UPDATE wypozyczenia 
             SET data_zwrotu = ? 
