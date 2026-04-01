@@ -1,177 +1,284 @@
 import sys
-from PyQt6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, 
-                             QHBoxLayout, QPushButton, QTableWidget, QLabel, 
-                             QLineEdit, QGroupBox, QHeaderView, QMessageBox)
-from db import WypozyczalniaGier
+from PyQt6 import QtCore, QtGui, QtWidgets
+from PyQt6.QtWidgets import QMessageBox, QTableWidgetItem
 
+from db import WypozyczalniaGier
 wypozyczalniaDB = WypozyczalniaGier()
 
+# ui z designera
+class Ui_MainWindow(object):
+    def setupUi(self, MainWindow):
+        MainWindow.setObjectName("MainWindow")
+        MainWindow.resize(950, 600)
+        
+        self.centralwidget = QtWidgets.QWidget(parent=MainWindow)
+        self.centralwidget.setObjectName("centralwidget")
+        
+        # main 
+        self.horizontalLayout = QtWidgets.QHBoxLayout(self.centralwidget)
+        self.horizontalLayout.setObjectName("horizontalLayout")
+        
+        # lewo
+        self.verticalLayoutLeft = QtWidgets.QVBoxLayout()
+        self.verticalLayoutLeft.setObjectName("verticalLayoutLeft")
+        
+        self.labelTabela = QtWidgets.QLabel(parent=self.centralwidget)
+        self.labelTabela.setObjectName("labelTabela")
+        self.verticalLayoutLeft.addWidget(self.labelTabela)
+        
+        self.tabela = QtWidgets.QTableWidget(parent=self.centralwidget)
+        self.tabela.setColumnCount(4)
+        self.tabela.setObjectName("tabela")
+        self.tabela.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.ResizeMode.Stretch)
+        self.verticalLayoutLeft.addWidget(self.tabela)
+        
+        self.btn_refresh = QtWidgets.QPushButton(parent=self.centralwidget)
+        self.btn_refresh.setMinimumSize(QtCore.QSize(0, 40))
+        self.btn_refresh.setObjectName("btn_refresh")
+        self.verticalLayoutLeft.addWidget(self.btn_refresh)
+        
+        self.horizontalLayout.addLayout(self.verticalLayoutLeft)
+        self.horizontalLayout.setStretch(0, 2)
+        
+        # prawo
+        self.verticalLayoutRight = QtWidgets.QVBoxLayout()
+        self.verticalLayoutRight.setSpacing(15)
+        self.verticalLayoutRight.setObjectName("verticalLayoutRight")
+        
+        # wypozyczenia
+        self.group_wypozyczenia = QtWidgets.QGroupBox(parent=self.centralwidget)
+        self.group_wypozyczenia.setObjectName("group_wypozyczenia")
+        self.layout_wyp = QtWidgets.QVBoxLayout(self.group_wypozyczenia)
+        self.layout_wyp.setObjectName("layout_wyp")
+        
+        self.labelDodajWyp = QtWidgets.QLabel(parent=self.group_wypozyczenia)
+        self.labelDodajWyp.setObjectName("labelDodajWyp")
+        self.layout_wyp.addWidget(self.labelDodajWyp)
+        
+        # szukajka
+        self.combo_wyszukaj_gre = QtWidgets.QComboBox(parent=self.group_wypozyczenia)
+        self.combo_wyszukaj_gre.setEditable(True)
+        self.combo_wyszukaj_gre.setInsertPolicy(QtWidgets.QComboBox.InsertPolicy.NoInsert)
+        self.combo_wyszukaj_gre.setObjectName("combo_wyszukaj_gre")
+        self.layout_wyp.addWidget(self.combo_wyszukaj_gre)
+        
+        self.inp_wyp_imie = QtWidgets.QLineEdit(parent=self.group_wypozyczenia)
+        self.inp_wyp_imie.setObjectName("inp_wyp_imie")
+        self.layout_wyp.addWidget(self.inp_wyp_imie)
+        
+        self.btn_dodaj_wyp = QtWidgets.QPushButton(parent=self.group_wypozyczenia)
+        self.btn_dodaj_wyp.setObjectName("btn_dodaj_wyp")
+        self.layout_wyp.addWidget(self.btn_dodaj_wyp)
+        
+        spacerItem = QtWidgets.QSpacerItem(20, 10, QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Fixed)
+        self.layout_wyp.addItem(spacerItem)
+        
+        self.labelUsunWyp = QtWidgets.QLabel(parent=self.group_wypozyczenia)
+        self.labelUsunWyp.setObjectName("labelUsunWyp")
+        self.layout_wyp.addWidget(self.labelUsunWyp)
+        
+        self.inp_usun_wyp_id = QtWidgets.QLineEdit(parent=self.group_wypozyczenia)
+        self.inp_usun_wyp_id.setObjectName("inp_usun_wyp_id")
+        self.layout_wyp.addWidget(self.inp_usun_wyp_id)
+        
+        self.btn_usun_wyp = QtWidgets.QPushButton(parent=self.group_wypozyczenia)
+        self.btn_usun_wyp.setObjectName("btn_usun_wyp")
+        self.layout_wyp.addWidget(self.btn_usun_wyp)
+        
+        self.verticalLayoutRight.addWidget(self.group_wypozyczenia)
+        
+        # gry
+        self.group_gry = QtWidgets.QGroupBox(parent=self.centralwidget)
+        self.group_gry.setObjectName("group_gry")
+        self.layout_gry = QtWidgets.QVBoxLayout(self.group_gry)
+        self.layout_gry.setObjectName("layout_gry")
+        
+        self.labelDodajGre = QtWidgets.QLabel(parent=self.group_gry)
+        self.labelDodajGre.setObjectName("labelDodajGre")
+        self.layout_gry.addWidget(self.labelDodajGre)
+        
+        self.inp_dodaj_tytul = QtWidgets.QLineEdit(parent=self.group_gry)
+        self.inp_dodaj_tytul.setObjectName("inp_dodaj_tytul")
+        self.layout_gry.addWidget(self.inp_dodaj_tytul)
+        
+        self.inp_dodaj_platforma = QtWidgets.QLineEdit(parent=self.group_gry)
+        self.inp_dodaj_platforma.setObjectName("inp_dodaj_platforma")
+        self.layout_gry.addWidget(self.inp_dodaj_platforma)
+        
+        self.btn_dodaj_gre = QtWidgets.QPushButton(parent=self.group_gry)
+        self.btn_dodaj_gre.setObjectName("btn_dodaj_gre")
+        self.layout_gry.addWidget(self.btn_dodaj_gre)
+        
+        spacerItem1 = QtWidgets.QSpacerItem(20, 10, QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Fixed)
+        self.layout_gry.addItem(spacerItem1)
+        
+        self.labelUsunGre = QtWidgets.QLabel(parent=self.group_gry)
+        self.labelUsunGre.setObjectName("labelUsunGre")
+        self.layout_gry.addWidget(self.labelUsunGre)
+        
+        self.inp_usun_gry_id = QtWidgets.QLineEdit(parent=self.group_gry)
+        self.inp_usun_gry_id.setObjectName("inp_usun_gry_id")
+        self.layout_gry.addWidget(self.inp_usun_gry_id)
+        
+        self.btn_usun_gre = QtWidgets.QPushButton(parent=self.group_gry)
+        self.btn_usun_gre.setStyleSheet("background-color: #ffcccc;")
+        self.btn_usun_gre.setObjectName("btn_usun_gre")
+        self.layout_gry.addWidget(self.btn_usun_gre)
+        
+        self.verticalLayoutRight.addWidget(self.group_gry)
+        
+        spacerItem2 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Expanding)
+        self.verticalLayoutRight.addItem(spacerItem2)
+        
+        self.horizontalLayout.addLayout(self.verticalLayoutRight)
+        self.horizontalLayout.setStretch(1, 1)
+        
+        MainWindow.setCentralWidget(self.centralwidget)
+        
+        self.retranslateUi(MainWindow)
+        QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
-class WypozyczalniaApp(QMainWindow):
+    def retranslateUi(self, MainWindow):
+        _translate = QtCore.QCoreApplication.translate
+        MainWindow.setWindowTitle(_translate("MainWindow", "Zarządzanie Wypożyczalnią Gier"))
+        self.labelTabela.setText(_translate("MainWindow", "<b>Aktualne wypożyczenia:</b>"))
+        self.tabela.setHorizontalHeaderLabels(["ID Wypoż.", "Gra", "Klient", "Data od"])
+        self.btn_refresh.setText(_translate("MainWindow", "🔄 Odśwież widok"))
+        
+        self.group_wypozyczenia.setTitle(_translate("MainWindow", "Zarządzanie Wypożyczeniami"))
+        self.labelDodajWyp.setText(_translate("MainWindow", "Dodaj nowe wypożyczenie:"))
+        self.combo_wyszukaj_gre.setPlaceholderText(_translate("MainWindow", "Wpisz tytuł gry, aby wyszukać..."))
+        self.inp_wyp_imie.setPlaceholderText(_translate("MainWindow", "Imię i nazwisko klienta..."))
+        self.btn_dodaj_wyp.setText(_translate("MainWindow", "Wypożycz grę"))
+        self.labelUsunWyp.setText(_translate("MainWindow", "Zakończ/Usuń wypożyczenie:"))
+        # db.py uzywa ID Gry do zwrotu, zmieniony placeholder
+        self.inp_usun_wyp_id.setPlaceholderText(_translate("MainWindow", "Podaj ID Gry (Zwrot)..."))
+        self.btn_usun_wyp.setText(_translate("MainWindow", "Usuń wypożyczenie (Zwrot)"))
+        
+        self.group_gry.setTitle(_translate("MainWindow", "Zarządzanie Bazą Gier"))
+        self.labelDodajGre.setText(_translate("MainWindow", "Dodaj nową grę do bazy:"))
+        self.inp_dodaj_tytul.setPlaceholderText(_translate("MainWindow", "Tytuł gry..."))
+        self.inp_dodaj_platforma.setPlaceholderText(_translate("MainWindow", "Platforma (np. PC, PS5)..."))
+        self.btn_dodaj_gre.setText(_translate("MainWindow", "Dodaj grę"))
+        self.labelUsunGre.setText(_translate("MainWindow", "Usuń grę z bazy trwale:"))
+        self.inp_usun_gry_id.setPlaceholderText(_translate("MainWindow", "ID Gry do usunięcia..."))
+        self.btn_usun_gre.setText(_translate("MainWindow", "Usuń grę"))
+
+
+# glowna apka
+class WypozyczalniaApp(QtWidgets.QMainWindow, Ui_MainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Zarządzanie Wypożyczalnią Gier")
-        self.resize(950, 600)
+        self.setupUi(self)
         
-        # Główny widget okna
-        central_widget = QWidget()
-        self.setCentralWidget(central_widget)
+        # autocomplete
+        completer = QtWidgets.QCompleter(self.combo_wyszukaj_gre.model())
+        completer.setFilterMode(QtCore.Qt.MatchFlag.MatchContains)
+        completer.setCaseSensitivity(QtCore.Qt.CaseSensitivity.CaseInsensitive)
+        self.combo_wyszukaj_gre.setCompleter(completer)
         
-        # Główny układ poziomy (dzieli okno na lewą i prawą stronę)
-        main_layout = QHBoxLayout(central_widget)
-        
-        # ==========================================
-        # LEWA STRONA: TABELA WYPOŻYCZEŃ
-        # ==========================================
-        left_layout = QVBoxLayout()
-        
-        lbl_tabela = QLabel("<b>Aktualne wypożyczenia:</b>")
-        self.tabela = QTableWidget()
-        self.tabela.setColumnCount(4)
-        self.tabela.setHorizontalHeaderLabels(["ID Wypoż.", "Gra", "Klient", "Data od"])
-        # Rozciągnięcie kolumn na całą szerokość tabeli
-        self.tabela.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
-        
-        self.btn_refresh = QPushButton("🔄 Odśwież widok")
-        self.btn_refresh.setMinimumHeight(40)
+        # akcje guziki
         self.btn_refresh.clicked.connect(self.akcja_odswiez)
-        
-        left_layout.addWidget(lbl_tabela)
-        left_layout.addWidget(self.tabela)
-        left_layout.addWidget(self.btn_refresh)
-        
-        # ==========================================
-        # PRAWA STRONA: PANELE STEROWANIA
-        # ==========================================
-        right_layout = QVBoxLayout()
-        right_layout.setSpacing(15) # Odstępy między grupami
-        
-        # --- GRUPA 1: ZARZĄDZANIE WYPOŻYCZENIAMI ---
-        group_wypozyczenia = QGroupBox("Zarządzanie Wypożyczeniami")
-        layout_wyp = QVBoxLayout()
-        
-        # Dodaj wypożyczenie
-        layout_wyp.addWidget(QLabel("Dodaj nowe wypożyczenie:"))
-        self.inp_wyp_id_gry = QLineEdit()
-        self.inp_wyp_id_gry.setPlaceholderText("ID Gry...")
-        self.inp_wyp_imie = QLineEdit()
-        self.inp_wyp_imie.setPlaceholderText("Imię i nazwisko klienta...")
-        self.btn_dodaj_wyp = QPushButton("Wypożycz grę")
         self.btn_dodaj_wyp.clicked.connect(self.akcja_dodaj_wypozyczenie)
-        
-        layout_wyp.addWidget(self.inp_wyp_id_gry)
-        layout_wyp.addWidget(self.inp_wyp_imie)
-        layout_wyp.addWidget(self.btn_dodaj_wyp)
-        
-        # Oddzielenie wizualne
-        layout_wyp.addSpacing(10)
-        
-        # Usuń wypożyczenie / Zgłoś zwrot
-        layout_wyp.addWidget(QLabel("Zakończ/Usuń wypożyczenie:"))
-        self.inp_usun_wyp_id = QLineEdit()
-        self.inp_usun_wyp_id.setPlaceholderText("ID Wypożyczenia lub ID Gry...")
-        self.btn_usun_wyp = QPushButton("Usuń wypożyczenie (Zwrot)")
         self.btn_usun_wyp.clicked.connect(self.akcja_usun_wypozyczenie)
-        
-        layout_wyp.addWidget(self.inp_usun_wyp_id)
-        layout_wyp.addWidget(self.btn_usun_wyp)
-        group_wypozyczenia.setLayout(layout_wyp)
-        
-        # --- GRUPA 2: ZARZĄDZANIE ASORTYMENTEM (GRY) ---
-        group_gry = QGroupBox("Zarządzanie Baza Gier")
-        layout_gry = QVBoxLayout()
-        
-        # Dodaj grę
-        layout_gry.addWidget(QLabel("Dodaj nową grę do bazy:"))
-        self.inp_dodaj_tytul = QLineEdit()
-        self.inp_dodaj_tytul.setPlaceholderText("Tytuł gry...")
-        self.inp_dodaj_platforma = QLineEdit()
-        self.inp_dodaj_platforma.setPlaceholderText("Platforma (np. PC, PS5)...")
-        self.btn_dodaj_gre = QPushButton("Dodaj grę")
         self.btn_dodaj_gre.clicked.connect(self.akcja_dodaj_gre)
-        
-        layout_gry.addWidget(self.inp_dodaj_tytul)
-        layout_gry.addWidget(self.inp_dodaj_platforma)
-        layout_gry.addWidget(self.btn_dodaj_gre)
-        
-        # Oddzielenie wizualne
-        layout_gry.addSpacing(10)
-        
-        # Usuń grę
-        layout_gry.addWidget(QLabel("Usuń grę z bazy trwale:"))
-        self.inp_usun_gry_id = QLineEdit()
-        self.inp_usun_gry_id.setPlaceholderText("ID Gry do usunięcia...")
-        self.btn_usun_gre = QPushButton("Usuń grę")
-        self.btn_usun_gre.setStyleSheet("background-color: #ffcccc;") # Lekko czerwony przycisk ostrzegawczy
         self.btn_usun_gre.clicked.connect(self.akcja_usun_gre)
         
-        layout_gry.addWidget(self.inp_usun_gry_id)
-        layout_gry.addWidget(self.btn_usun_gre)
-        group_gry.setLayout(layout_gry)
-        
-        # Dodawanie grup do prawego panelu
-        right_layout.addWidget(group_wypozyczenia)
-        right_layout.addWidget(group_gry)
-        right_layout.addStretch() # Wypycha panele do góry, żeby nie latały po całym ekranie
-        
-        # ==========================================
-        # ŁĄCZENIE POŁÓWEK OKNA
-        # ==========================================
-        main_layout.addLayout(left_layout, stretch=2) # Tabela zajmuje 2/3 szerokości
-        main_layout.addLayout(right_layout, stretch=1) # Formularze zajmują 1/3 szerokości
+        self.zaladuj_gry_do_wyszukiwarki()
+        self.akcja_odswiez() # startowe zaladowanie tabeli
 
+    def zaladuj_gry_do_wyszukiwarki(self):
+        self.combo_wyszukaj_gre.clear()
+        self.combo_wyszukaj_gre.addItem("--- Wybierz lub wyszukaj grę ---", None)
+        
+        # bierze z db list_tuple (id, tytul, plat)
+        gry_z_bazy = wypozyczalniaDB.pobierz_dostepne_gry()
+        
+        for id_gry, tytul, platforma in gry_z_bazy:
+            self.combo_wyszukaj_gre.addItem(f"{tytul} ({platforma})", id_gry)
 
-    # ==========================================
-    # METODY (LOGIKA PRZYCISKÓW)
-    # ==========================================
-    
     def akcja_odswiez(self):
-        print("Akcja: Odświeżam tabelę...")
-        wypozyczalniaDB.pobierz_aktywne_wypozyczenia()
-        QMessageBox.information(self, "Info", "Tabela odświeżona! (Tutaj podepnij pobieranie z bazy)")
+        wypozyczenia = wypozyczalniaDB.pobierz_aktywne_wypozyczenia()
+        
+        # reset tabeli
+        self.tabela.setRowCount(0)
+        self.tabela.setRowCount(len(wypozyczenia))
+        
+        for row_idx, row_data in enumerate(wypozyczenia):
+            # wywala tuple na komorki
+            for col_idx, value in enumerate(row_data):
+                self.tabela.setItem(row_idx, col_idx, QTableWidgetItem(str(value)))
 
     def akcja_dodaj_wypozyczenie(self):
-        id_gry = self.inp_wyp_id_gry.text()
+        id_gry = self.combo_wyszukaj_gre.currentData()
         imie = self.inp_wyp_imie.text()
-        print(f"Akcja: Dodaj wypożyczenie -> Gra ID: {id_gry}, Klient: {imie}")
         
-        wypozyczalniaDB.wypozycz_gre(imie, id_gry)
+        if id_gry is None or not imie:
+            QMessageBox.warning(self, "Błąd", "Wybierz grę i wpisz imię!")
+            return
+            
+        status, msg = wypozyczalniaDB.wypozycz_gre(imie, id_gry)
         
-        self.inp_wyp_id_gry.clear()
-        self.inp_wyp_imie.clear()
+        if status:
+            QMessageBox.information(self, "Git", msg)
+            self.combo_wyszukaj_gre.setCurrentIndex(0) 
+            self.inp_wyp_imie.clear()
+            self.zaladuj_gry_do_wyszukiwarki() # odswiez (gra idzie w obieg)
+            self.akcja_odswiez()
+        else:
+            QMessageBox.warning(self, "Ups", msg)
 
     def akcja_usun_wypozyczenie(self):
-        id_wyp = self.inp_usun_wyp_id.text()
-        print(f"Akcja: Usuń wypożyczenie (Zwrot) -> ID: {id_wyp}")
+        # db uzywa id gry do zwrotu!
+        id_gry = self.inp_usun_wyp_id.text()
+        if not id_gry:
+            return
+            
+        status, msg = wypozyczalniaDB.zwroc_gre(id_gry)
         
-        wypozyczalniaDB.zwroc_gre(id_wyp)
-        
-        self.inp_usun_wyp_id.clear()
+        if status:
+            QMessageBox.information(self, "Git", msg)
+            self.inp_usun_wyp_id.clear()
+            self.zaladuj_gry_do_wyszukiwarki() # wraca do combo
+            self.akcja_odswiez()
+        else:
+            QMessageBox.warning(self, "Ups", msg)
 
     def akcja_dodaj_gre(self):
         tytul = self.inp_dodaj_tytul.text()
         platforma = self.inp_dodaj_platforma.text()
-        print(f"Akcja: Dodaj grę -> Tytuł: {tytul}, Platforma: {platforma}")
         
-        wypozyczalniaDB.dodaj_gre(tytul, platforma)
+        if not tytul or not platforma:
+            QMessageBox.warning(self, "Błąd", "Wpisz tytuł i platformę!")
+            return
+            
+        status, msg = wypozyczalniaDB.dodaj_gre(tytul, platforma)
+        QMessageBox.information(self, "Git", msg)
         
         self.inp_dodaj_tytul.clear()
         self.inp_dodaj_platforma.clear()
+        self.zaladuj_gry_do_wyszukiwarki()
 
     def akcja_usun_gre(self):
         id_gry = self.inp_usun_gry_id.text()
-        print(f"Akcja: Usuń grę -> ID: {id_gry}")
-        
-        wypozyczalniaDB.usun_gre(id_gry)
-        
+        if not id_gry:
+            return
+            
+        # brak funkcji usun gre w db.py wiec wale raw sqla
+        try:
+            wypozyczalniaDB.cursor.execute('DELETE FROM gry WHERE id = ?', (id_gry,))
+            wypozyczalniaDB.conn.commit()
+            QMessageBox.information(self, "Git", "Gra wyparowała z bazy.")
+        except Exception as e:
+            QMessageBox.warning(self, "Błąd", f"Coś chrupnęło: {e}")
+            
         self.inp_usun_gry_id.clear()
+        self.zaladuj_gry_do_wyszukiwarki()
+        self.akcja_odswiez()
 
 
 if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    
-    
-    # Ustawienie prostego, jasnego stylu aplikacji (opcjonalne)
+    app = QtWidgets.QApplication(sys.argv)
     app.setStyle("Fusion")
     
     okno = WypozyczalniaApp()
