@@ -194,6 +194,7 @@ class WypozyczalniaApp(QtWidgets.QMainWindow, Ui_MainWindow):
         self.btn_usun_wyp.clicked.connect(self.akcja_usun_wypozyczenie)
         self.btn_dodaj_gre.clicked.connect(self.akcja_dodaj_gre)
         self.btn_usun_gre.clicked.connect(self.akcja_usun_gre)
+        self.btn_hard_reset_baza.clicked.connect(self.akcja_hard_reset_bazy)
         
         self.zaladuj_gry_do_wyszukiwarki()
         self.akcja_odswiez()
@@ -293,6 +294,17 @@ class WypozyczalniaApp(QtWidgets.QMainWindow, Ui_MainWindow):
         self.inp_usun_gry_id.clear()
         self.zaladuj_gry_do_wyszukiwarki()
         self.akcja_odswiez()
+    
+    def akcja_hard_reset_bazy(self):
+        confirm = QMessageBox.question(self, "Potwierdzenie", "Czy na pewno chcesz usunąć wszystkie zapisy? Akcja nieodwracalna" "⚠️", QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+        if confirm == QMessageBox.StandardButton.Yes:
+            status, msg = wypozyczalniaDB.hard_reset_bazy()
+            if status:
+                QMessageBox.information(self, "Usunięto", msg)
+                self.zaladuj_gry_do_wyszukiwarki()
+                self.akcja_odswiez()
+            else:
+                QMessageBox.warning(self, "Ups", "Coś poszło nie tak")
 
 
 if __name__ == "__main__":
