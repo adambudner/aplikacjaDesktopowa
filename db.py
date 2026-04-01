@@ -95,6 +95,19 @@ class WypozyczalniaGier:
         self.cursor.execute('DELETE FROM gry')
         self.conn.commit()
         return True, "Wszystkie zapisy zostały usunięte."
+    
+    def hard_reset_bazy(self):
+        # wywala wszystkie rekordy
+        self.cursor.execute('DELETE FROM wypozyczenia')
+        self.cursor.execute('DELETE FROM gry')
+        
+        # resetuje AUTOINCREMENT
+        self.cursor.execute("DELETE FROM sqlite_sequence WHERE name='wypozyczenia'")
+        self.cursor.execute("DELETE FROM sqlite_sequence WHERE name='gry'")
+        self.conn.commit()
+        
+        self.cursor.execute('VACUUM')
+        return True, "Baza zaorana, indeksy zresetowane."
 
     def zamknij_polaczenie(self):
         self.conn.close()

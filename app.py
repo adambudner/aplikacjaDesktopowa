@@ -1,9 +1,14 @@
 import sys
+import os
 from PyQt6 import QtCore, QtGui, QtWidgets
 from PyQt6.QtWidgets import QMessageBox, QTableWidgetItem
 
+# fix na sciezke bazy - lapie tam gdzie plik py, a nie tam gdzie terminal
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DB_PATH = os.path.join(BASE_DIR, 'wypozyczalnia.sqlite3')
+
 from db import WypozyczalniaGier
-wypozyczalniaDB = WypozyczalniaGier()
+wypozyczalniaDB = WypozyczalniaGier(nazwa_bazy=DB_PATH)
 
 # ui z designera
 class Ui_MainWindow(object):
@@ -121,9 +126,14 @@ class Ui_MainWindow(object):
         self.layout_gry.addWidget(self.inp_usun_gry_id)
         
         self.btn_usun_gre = QtWidgets.QPushButton(parent=self.group_gry)
-        self.btn_usun_gre.setStyleSheet("background-color: #ffcccc;")
+        # self.btn_usun_gre.setStyleSheet("background-color: #ffcccc;")
         self.btn_usun_gre.setObjectName("btn_usun_gre")
         self.layout_gry.addWidget(self.btn_usun_gre)
+        
+        # Hard reset bazy
+        self.btn_hard_reset_baza = QtWidgets.QPushButton(parent=self.group_gry)
+        self.btn_hard_reset_baza.setObjectName("btn_hard_reset")
+        self.layout_gry.addWidget(self.btn_hard_reset_baza)
         
         self.verticalLayoutRight.addWidget(self.group_gry)
         
@@ -151,8 +161,8 @@ class Ui_MainWindow(object):
         self.inp_wyp_imie.setPlaceholderText(_translate("MainWindow", "Imię i nazwisko klienta..."))
         self.btn_dodaj_wyp.setText(_translate("MainWindow", "Wypożycz grę"))
         self.labelUsunWyp.setText(_translate("MainWindow", "Zakończ/Usuń wypożyczenie:"))
-        # db.py uzywa ID Gry do zwrotu, zmieniony placeholder
-        self.inp_usun_wyp_id.setPlaceholderText(_translate("MainWindow", "Podaj ID Gry (Zwrot)..."))
+        # zmienione na ID wypozyczenia
+        self.inp_usun_wyp_id.setPlaceholderText(_translate("MainWindow", "Podaj ID Wypożyczenia (z tabeli)..."))
         self.btn_usun_wyp.setText(_translate("MainWindow", "Usuń wypożyczenie (Zwrot)"))
         
         self.group_gry.setTitle(_translate("MainWindow", "Zarządzanie Bazą Gier"))
@@ -163,6 +173,7 @@ class Ui_MainWindow(object):
         self.labelUsunGre.setText(_translate("MainWindow", "Usuń grę z bazy trwale:"))
         self.inp_usun_gry_id.setPlaceholderText(_translate("MainWindow", "ID Gry do usunięcia..."))
         self.btn_usun_gre.setText(_translate("MainWindow", "Usuń grę"))
+        self.btn_hard_reset_baza.setText(_translate("MainWindow", "⚠️ Usuń wszystkie dane ⚠️"))
 
 
 # glowna apka
@@ -185,7 +196,7 @@ class WypozyczalniaApp(QtWidgets.QMainWindow, Ui_MainWindow):
         self.btn_usun_gre.clicked.connect(self.akcja_usun_gre)
         
         self.zaladuj_gry_do_wyszukiwarki()
-        self.akcja_odswiez() # startowe zaladowanie tabeli
+        self.akcja_odswiez()
 
     def zaladuj_gry_do_wyszukiwarki(self):
         self.combo_wyszukaj_gre.clear()
@@ -205,7 +216,6 @@ class WypozyczalniaApp(QtWidgets.QMainWindow, Ui_MainWindow):
         self.tabela.setRowCount(len(wypozyczenia))
         
         for row_idx, row_data in enumerate(wypozyczenia):
-            # wywala tuple na komorki
             for col_idx, value in enumerate(row_data):
                 self.tabela.setItem(row_idx, col_idx, QTableWidgetItem(str(value)))
 
@@ -229,20 +239,28 @@ class WypozyczalniaApp(QtWidgets.QMainWindow, Ui_MainWindow):
             QMessageBox.warning(self, "Ups", msg)
 
     def akcja_usun_wypozyczenie(self):
-        # db uzywa id gry do zwrotu!
-        id_gry = self.inp_usun_wyp_id.text()
-        if not id_gry:
+        id_wyp = self.inp_usun_wyp_id.text()
+        if not id_wyp:
             return
             
-        status, msg = wypozyczalniaDB.zwroc_gre(id_gry)
+        # szukamy id_gry po id_wypozyczenia zeby pyklo z gotowym db.py bez ruszania go
+        wypozyczalniaDB.cursor.execute('SELECT id_gry FROM wypozyczenia WHERE id = ? AND data_zwrotu IS NULL', (id_wyp,))
+        wynik = wypozyczalniaDB.cursor.fetchone()
         
-        if status:
-            QMessageBox.information(self, "Git", msg)
-            self.inp_usun_wyp_id.clear()
-            self.zaladuj_gry_do_wyszukiwarki() # wraca do combo
-            self.akcja_odswiez()
+        if wynik:
+            id_gry = wynik[0]
+            # puszczamy oryginalna funkcje z db.py
+            status, msg = wypozyczalniaDB.zwroc_gre(id_gry)
+            
+            if status:
+                QMessageBox.information(self, "Git", f"Zwrócono grę (Wypożyczenie ID: {id_wyp})")
+                self.inp_usun_wyp_id.clear()
+                self.zaladuj_gry_do_wyszukiwarki() # gra znowu dostepna w combo
+                self.akcja_odswiez()
+            else:
+                QMessageBox.warning(self, "Ups", msg)
         else:
-            QMessageBox.warning(self, "Ups", msg)
+            QMessageBox.warning(self, "Błąd", "Nie znaleziono aktywnego wypożyczenia o tym ID!")
 
     def akcja_dodaj_gre(self):
         tytul = self.inp_dodaj_tytul.text()
@@ -264,7 +282,7 @@ class WypozyczalniaApp(QtWidgets.QMainWindow, Ui_MainWindow):
         if not id_gry:
             return
             
-        # brak funkcji usun gre w db.py wiec wale raw sqla
+        # raw sql bo w db.py nie ma usun gre
         try:
             wypozyczalniaDB.cursor.execute('DELETE FROM gry WHERE id = ?', (id_gry,))
             wypozyczalniaDB.conn.commit()
