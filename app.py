@@ -1,9 +1,10 @@
 import sys
 import os
+from datetime import datetime
 from PyQt6 import QtCore, QtGui, QtWidgets
 from PyQt6.QtWidgets import QMessageBox, QTableWidgetItem
 
-# fix na sciezke bazy - lapie tam gdzie plik py, a nie tam gdzie terminal
+# fix na sciezke bazy - lapie tam gdzie plik py
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_PATH = os.path.join(BASE_DIR, 'wypozyczalnia.sqlite3')
 
@@ -110,6 +111,13 @@ class Ui_MainWindow(object):
         self.inp_dodaj_platforma.setObjectName("inp_dodaj_platforma")
         self.layout_gry.addWidget(self.inp_dodaj_platforma)
         
+        self.inp_dodaj_ilosc = QtWidgets.QSpinBox(parent=self.group_gry)
+        self.inp_dodaj_ilosc.setObjectName("inp_dodaj_ilosc")
+        self.inp_dodaj_ilosc.setMinimum(1)
+        self.inp_dodaj_ilosc.setMaximum(999)
+        self.inp_dodaj_ilosc.setPrefix("Ilość sztuk: ")
+        self.layout_gry.addWidget(self.inp_dodaj_ilosc)
+        
         self.btn_dodaj_gre = QtWidgets.QPushButton(parent=self.group_gry)
         self.btn_dodaj_gre.setObjectName("btn_dodaj_gre")
         self.layout_gry.addWidget(self.btn_dodaj_gre)
@@ -126,7 +134,6 @@ class Ui_MainWindow(object):
         self.layout_gry.addWidget(self.inp_usun_gry_id)
         
         self.btn_usun_gre = QtWidgets.QPushButton(parent=self.group_gry)
-        # self.btn_usun_gre.setStyleSheet("background-color: #ffcccc;")
         self.btn_usun_gre.setObjectName("btn_usun_gre")
         self.layout_gry.addWidget(self.btn_usun_gre)
         
@@ -161,7 +168,6 @@ class Ui_MainWindow(object):
         self.inp_wyp_imie.setPlaceholderText(_translate("MainWindow", "Imię i nazwisko klienta..."))
         self.btn_dodaj_wyp.setText(_translate("MainWindow", "Wypożycz grę"))
         self.labelUsunWyp.setText(_translate("MainWindow", "Zakończ/Usuń wypożyczenie:"))
-        # zmienione na ID wypozyczenia
         self.inp_usun_wyp_id.setPlaceholderText(_translate("MainWindow", "Podaj ID Wypożyczenia (z tabeli)..."))
         self.btn_usun_wyp.setText(_translate("MainWindow", "Usuń wypożyczenie (Zwrot)"))
         
@@ -203,16 +209,19 @@ class WypozyczalniaApp(QtWidgets.QMainWindow, Ui_MainWindow):
         self.combo_wyszukaj_gre.clear()
         self.combo_wyszukaj_gre.addItem("--- Wybierz lub wyszukaj grę ---", None)
         
-        # bierze z db list_tuple (id, tytul, plat)
         gry_z_bazy = wypozyczalniaDB.pobierz_dostepne_gry()
         
-        for id_gry, tytul, platforma in gry_z_bazy:
-            self.combo_wyszukaj_gre.addItem(f"{tytul} ({platforma})", id_gry)
+        for wiersz in gry_z_bazy:
+            id_gry = wiersz[0]
+            tytul = wiersz[1]
+            platforma = wiersz[2]
+            ilosc_info = f" | Sztuk: {wiersz[3]}" if len(wiersz) > 3 else ""
+            
+            self.combo_wyszukaj_gre.addItem(f"{tytul} ({platforma}){ilosc_info}", id_gry)
 
     def akcja_odswiez(self):
         wypozyczenia = wypozyczalniaDB.pobierz_aktywne_wypozyczenia()
         
-        # reset tabeli
         self.tabela.setRowCount(0)
         self.tabela.setRowCount(len(wypozyczenia))
         
@@ -234,7 +243,7 @@ class WypozyczalniaApp(QtWidgets.QMainWindow, Ui_MainWindow):
             QMessageBox.information(self, "Git", msg)
             self.combo_wyszukaj_gre.setCurrentIndex(0) 
             self.inp_wyp_imie.clear()
-            self.zaladuj_gry_do_wyszukiwarki() # odswiez (gra idzie w obieg)
+            self.zaladuj_gry_do_wyszukiwarki() 
             self.akcja_odswiez()
         else:
             QMessageBox.warning(self, "Ups", msg)
@@ -244,46 +253,64 @@ class WypozyczalniaApp(QtWidgets.QMainWindow, Ui_MainWindow):
         if not id_wyp:
             return
             
-        # szukamy id_gry po id_wypozyczenia zeby pyklo z gotowym db.py bez ruszania go
-        wypozyczalniaDB.cursor.execute('SELECT id_gry FROM wypozyczenia WHERE id = ? AND data_zwrotu IS NULL', (id_wyp,))
-        wynik = wypozyczalniaDB.cursor.fetchone()
-        
-        if wynik:
-            id_gry = wynik[0]
-            # puszczamy oryginalna funkcje z db.py
-            status, msg = wypozyczalniaDB.zwroc_gre(id_gry)
+        # Piszemy surowy SQL, żeby zamknąć konkretne wypożyczenie (a nie wszystkie naraz!)
+        try:
+            wypozyczalniaDB.cursor.execute('SELECT id_gry FROM wypozyczenia WHERE id = ? AND data_zwrotu IS NULL', (id_wyp,))
+            wynik = wypozyczalniaDB.cursor.fetchone()
             
-            if status:
-                QMessageBox.information(self, "Git", f"Zwrócono grę (Wypożyczenie ID: {id_wyp})")
+            if wynik:
+                id_gry = wynik[0]
+                data_zwrotu = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                
+                # 1. Ustaw datę zwrotu TYLKO dla tego jednego wypożyczenia
+                wypozyczalniaDB.cursor.execute('''
+                    UPDATE wypozyczenia 
+                    SET data_zwrotu = ? 
+                    WHERE id = ?
+                ''', (data_zwrotu, id_wyp))
+                
+                # 2. Zwiększ ilość gier na stanie (zapas wraca na półkę)
+                wypozyczalniaDB.cursor.execute('UPDATE gry SET ilosc = ilosc + 1 WHERE id = ?', (id_gry,))
+                
+                wypozyczalniaDB.conn.commit()
+                
+                QMessageBox.information(self, "Git", f"Zwrócono grę (Wypożyczenie ID: {id_wyp}). Zapas zwiększony o 1 szt.")
                 self.inp_usun_wyp_id.clear()
-                self.zaladuj_gry_do_wyszukiwarki() # gra znowu dostepna w combo
+                self.zaladuj_gry_do_wyszukiwarki() 
                 self.akcja_odswiez()
             else:
-                QMessageBox.warning(self, "Ups", msg)
-        else:
-            QMessageBox.warning(self, "Błąd", "Nie znaleziono aktywnego wypożyczenia o tym ID!")
+                QMessageBox.warning(self, "Błąd", "Nie znaleziono aktywnego wypożyczenia o tym ID!")
+        except Exception as e:
+            QMessageBox.warning(self, "Błąd", f"Coś poszło nie tak podczas zwrotu: {e}")
 
     def akcja_dodaj_gre(self):
         tytul = self.inp_dodaj_tytul.text()
         platforma = self.inp_dodaj_platforma.text()
+        ilosc = self.inp_dodaj_ilosc.value() 
         
         if not tytul or not platforma:
             QMessageBox.warning(self, "Błąd", "Wpisz tytuł i platformę!")
             return
             
-        status, msg = wypozyczalniaDB.dodaj_gre(tytul, platforma)
-        QMessageBox.information(self, "Git", msg)
-        
-        self.inp_dodaj_tytul.clear()
-        self.inp_dodaj_platforma.clear()
-        self.zaladuj_gry_do_wyszukiwarki()
+        # Zmieniona nazwa funkcji na Twoją
+        try:
+            status, msg = wypozyczalniaDB.dodaj_gre_z_iloscia(tytul, platforma, ilosc)
+            QMessageBox.information(self, "Git", msg)
+            
+            self.inp_dodaj_tytul.clear()
+            self.inp_dodaj_platforma.clear()
+            self.inp_dodaj_ilosc.setValue(1) 
+            self.zaladuj_gry_do_wyszukiwarki()
+        except AttributeError:
+            QMessageBox.warning(self, "Błąd", "Upewnij się, że w db.py funkcja naprawdę nazywa się 'dodaj_gra_z_iloscia'!")
+        except Exception as e:
+            QMessageBox.warning(self, "Błąd", f"Nieudane dodawanie: {e}")
 
     def akcja_usun_gre(self):
         id_gry = self.inp_usun_gry_id.text()
         if not id_gry:
             return
             
-        # raw sql bo w db.py nie ma usun gre
         try:
             wypozyczalniaDB.cursor.execute('DELETE FROM gry WHERE id = ?', (id_gry,))
             wypozyczalniaDB.conn.commit()
