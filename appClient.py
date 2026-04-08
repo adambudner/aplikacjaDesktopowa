@@ -10,7 +10,6 @@ DB_PATH = os.path.join(BASE_DIR, 'wypozyczalnia.sqlite3')
 
 from db import WypozyczalniaGier
 wypozyczalniaDB = WypozyczalniaGier(nazwa_bazy=DB_PATH)
-imie = "guest"
 
 
 class MainWindowUi(object):
@@ -190,8 +189,8 @@ class App(QtWidgets.QMainWindow, MainWindowUi):
             QMessageBox.warning(self, "Błąd", "Wpisz swoje imię, aby się zalogować!")
             return
         
-        imie = imie_z_input
-        QMessageBox.information(self, "Git", f"Zalogowano jako: {imie}")
+        self.imie = imie_z_input
+        QMessageBox.information(self, "Git", f"Zalogowano jako: {self.imie}")
         self.inp_log.clear()
         self.akcja_odswiez()
 
@@ -249,7 +248,9 @@ class App(QtWidgets.QMainWindow, MainWindowUi):
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
     app.setStyle("Fusion")
+    imie1 = "guest"
     
-    okno = App(imie)
+    
+    okno = App(imie1)
     okno.show()
     sys.exit(app.exec())
