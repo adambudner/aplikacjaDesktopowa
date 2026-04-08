@@ -155,7 +155,7 @@ class App(QtWidgets.QMainWindow, MainWindowUi):
             self.combo_wyszukaj_gre.addItem(f"{tytul} ({platforma}){ilosc_info}", id_gry)
 
     def akcja_odswiez(self):
-        wypozyczenia = wypozyczalniaDB.pobierz_aktywne_wypozyczenia(self.imie)
+        wypozyczenia = wypozyczalniaDB.pobierz_aktywne_wypozyczenia_imie(self.imie)
         
         self.tabela.setRowCount(0)
         self.tabela.setRowCount(len(wypozyczenia))

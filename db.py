@@ -94,13 +94,13 @@ class WypozyczalniaGier:
             WHERE w.data_zwrotu IS NULL
         ''')
         return self.cursor.fetchall()
-    def pobierz_aktywne_wypozyczenia(self, imie):
+    def pobierz_aktywne_wypozyczenia_imie(self, imie):
         self.cursor.execute('''
             SELECT w.id, g.tytul, w.imie_klienta, w.data_wypozyczenia
             FROM wypozyczenia w
             JOIN gry g ON w.id_gry = g.id
             WHERE w.data_zwrotu IS NULL AND w.imie_klienta = ?
-            ''') , (imie,)
+            ''' , (imie,))
         return self.cursor.fetchall()
 
     def usun_wszystkie_zapisy(self):
