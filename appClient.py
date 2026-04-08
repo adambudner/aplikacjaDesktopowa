@@ -10,6 +10,8 @@ DB_PATH = os.path.join(BASE_DIR, 'wypozyczalnia.sqlite3')
 
 from db import WypozyczalniaGier
 wypozyczalniaDB = WypozyczalniaGier(nazwa_bazy=DB_PATH)
+imie = "guest"
+
 
 class MainWindowUi(object):
     def setupUi(self, MainWindow):
@@ -56,6 +58,20 @@ class MainWindowUi(object):
         self.group_wypozyczenia.setObjectName("group_wypozyczenia")
         self.layout_wyp = QtWidgets.QVBoxLayout(self.group_wypozyczenia)
         self.layout_wyp.setObjectName("layout_wyp")
+        
+        # log
+        self.label_loguj = QtWidgets.QLabel(parent=self.group_wypozyczenia)
+        self.label_loguj.setObjectName("label_loguj")       
+        self.layout_wyp.addWidget(self.label_loguj)
+        
+        self.inp_log = QtWidgets.QLineEdit(parent=self.group_wypozyczenia)
+        self.inp_log.setObjectName("inp_log")
+        self.layout_wyp.addWidget(self.inp_log)
+        
+        self.btn_loguj = QtWidgets.QPushButton(parent=self.group_wypozyczenia)
+        self.btn_loguj.setObjectName("btn_loguj")
+        self.layout_wyp.addWidget(self.btn_loguj)
+        
         
         self.labelDodajWyp = QtWidgets.QLabel(parent=self.group_wypozyczenia)
         self.labelDodajWyp.setObjectName("labelDodajWyp")
@@ -111,6 +127,9 @@ class MainWindowUi(object):
         self.btn_refresh.setText(_translate("MainWindow", "🔄 Odśwież widok")) 
         
         # prawo
+        self.label_loguj.setText(_translate("MainWindow", "Zaloguj się:"))
+        self.inp_log.setPlaceholderText(_translate("MainWindow", "Wpisz swoje imię..."))
+        self.btn_loguj.setText(_translate("MainWindow", "Zaloguj"))
         self.group_wypozyczenia.setTitle(_translate("MainWindow", "Wypożyczanie gier"))
         self.labelDodajWyp.setText(_translate("MainWindow", "Wypożycz:"))
         self.combo_wyszukaj_gre.setPlaceholderText(_translate("MainWindow", "Wpisz tytuł gry, aby wyszukać..."))
@@ -134,6 +153,7 @@ class App(QtWidgets.QMainWindow, MainWindowUi):
         
         # akcje guziki
         self.btn_refresh.clicked.connect(self.akcja_odswiez)
+        self.btn_loguj.clicked.connect(self.akcja_loguj)
         self.btn_dodaj_wyp.clicked.connect(self.akcja_dodaj_wypozyczenie)
         self.btn_usun_wyp.clicked.connect(self.akcja_usun_wypozyczenie)
         
@@ -163,6 +183,17 @@ class App(QtWidgets.QMainWindow, MainWindowUi):
         for row_idx, row_data in enumerate(wypozyczenia):
             for col_idx, value in enumerate(row_data):
                 self.tabela.setItem(row_idx, col_idx, QTableWidgetItem(str(value)))
+
+    def akcja_loguj(self):
+        imie_z_input = self.inp_log.text().strip()
+        if not imie_z_input:
+            QMessageBox.warning(self, "Błąd", "Wpisz swoje imię, aby się zalogować!")
+            return
+        
+        imie = imie_z_input
+        QMessageBox.information(self, "Git", f"Zalogowano jako: {imie}")
+        self.inp_log.clear()
+        self.akcja_odswiez()
 
     def akcja_dodaj_wypozyczenie(self):
         id_gry = self.combo_wyszukaj_gre.currentData()
@@ -218,8 +249,6 @@ class App(QtWidgets.QMainWindow, MainWindowUi):
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
     app.setStyle("Fusion")
-    imie = "Adam"
-    
     
     okno = App(imie)
     okno.show()
