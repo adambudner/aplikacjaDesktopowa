@@ -253,7 +253,6 @@ class WypozyczalniaApp(QtWidgets.QMainWindow, Ui_MainWindow):
         if not id_wyp:
             return
             
-        # Piszemy surowy SQL, żeby zamknąć konkretne wypożyczenie (a nie wszystkie naraz!)
         try:
             wypozyczalniaDB.cursor.execute('SELECT id_gry FROM wypozyczenia WHERE id = ? AND data_zwrotu IS NULL', (id_wyp,))
             wynik = wypozyczalniaDB.cursor.fetchone()
@@ -262,14 +261,12 @@ class WypozyczalniaApp(QtWidgets.QMainWindow, Ui_MainWindow):
                 id_gry = wynik[0]
                 data_zwrotu = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                 
-                # 1. Ustaw datę zwrotu TYLKO dla tego jednego wypożyczenia
                 wypozyczalniaDB.cursor.execute('''
                     UPDATE wypozyczenia 
                     SET data_zwrotu = ? 
                     WHERE id = ?
                 ''', (data_zwrotu, id_wyp))
                 
-                # 2. Zwiększ ilość gier na stanie (zapas wraca na półkę)
                 wypozyczalniaDB.cursor.execute('UPDATE gry SET ilosc = ilosc + 1 WHERE id = ?', (id_gry,))
                 
                 wypozyczalniaDB.conn.commit()
