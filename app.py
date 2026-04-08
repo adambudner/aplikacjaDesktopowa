@@ -4,7 +4,6 @@ from datetime import datetime
 from PyQt6 import QtCore, QtGui, QtWidgets
 from PyQt6.QtWidgets import QMessageBox, QTableWidgetItem
 
-# fix na sciezke bazy - lapie tam gdzie plik py
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_PATH = os.path.join(BASE_DIR, 'wypozyczalnia.sqlite3')
 
