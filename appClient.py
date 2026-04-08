@@ -11,8 +11,8 @@ DB_PATH = os.path.join(BASE_DIR, 'wypozyczalnia.sqlite3')
 from db import WypozyczalniaGier
 wypozyczalniaDB = WypozyczalniaGier(nazwa_bazy=DB_PATH)
 
-class MainWindowUi(QtWidgets.QMainWindow):
-    def setup(self, MainWindow):
+class MainWindowUi(object):
+    def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(950, 600)
         
@@ -115,7 +115,7 @@ class MainWindowUi(QtWidgets.QMainWindow):
         self.inp_usun_wyp_id.setPlaceholderText(_translate("MainWindow", "Podaj ID Wypożyczenia (z tabeli)..."))
         self.btn_usun_wyp.setText(_translate("MainWindow", "Zwróć grę"))     
         
-class App():
+class App(QtWidgets.QMainWindow, MainWindowUi):
     def __init__(self, imie):
         super().__init__()
         self.imie = imie
