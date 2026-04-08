@@ -96,7 +96,24 @@ class MainWindowUi(QtWidgets.QMainWindow):
         
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
+    
+    def resantleUi(self, MainWindow):
+        _translate = QtCore.QCoreApplication.translate
+        MainWindow.setWindowTitle(_translate("MainWindow", "Zarządzanie Wypożyczalnią Gier"))
+        # lewo
+        self.labelTabela.setText(_translate("MainWindow", "<b>Aktualne wypożyczenia:</b>"))
+        self.tabela.setHorizontalHeaderLabels(["ID Wypoż.", "Gra", "Klient", "Data od"])
+        self.btn_refresh.setText(_translate("MainWindow", "🔄 Odśwież widok")) 
         
+        # prawo
+        self.group_wypozyczenia.setTitle(_translate("MainWindow", "Wypożyczanie gier"))
+        self.labelDodajWyp.setText(_translate("MainWindow", "Wypożycz:"))
+        self.combo_wyszukaj_gre.setPlaceholderText(_translate("MainWindow", "Wpisz tytuł gry, aby wyszukać..."))
+        # self.inp_wyp_imie.setPlaceholderText(_translate("MainWindow", "Imię i nazwisko klienta..."))
+        self.btn_dodaj_wyp.setText(_translate("MainWindow", "Wypożycz grę"))
+        self.labelUsunWyp.setText(_translate("MainWindow", "Zwróć:"))
+        self.inp_usun_wyp_id.setPlaceholderText(_translate("MainWindow", "Podaj ID Wypożyczenia (z tabeli)..."))
+        self.btn_usun_wyp.setText(_translate("MainWindow", "Zwróć grę"))     
         
 
 
