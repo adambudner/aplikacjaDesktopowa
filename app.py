@@ -129,9 +129,16 @@ class Ui_MainWindow(object):
         self.labelUsunGre.setObjectName("labelUsunGre")
         self.layout_gry.addWidget(self.labelUsunGre)
         
-        self.inp_usun_gry_id = QtWidgets.QLineEdit(parent=self.group_gry)
-        self.inp_usun_gry_id.setObjectName("inp_usun_gry_id")
-        self.layout_gry.addWidget(self.inp_usun_gry_id)
+        # self.inp_usun_gry_id = QtWidgets.QLineEdit(parent=self.group_gry)
+        # self.inp_usun_gry_id.setObjectName("inp_usun_gry_id")
+        # self.layout_gry.addWidget(self.inp_usun_gry_id)
+        # szukajka v.2 usungre
+        self.combo_usun_gry = QtWidgets.QComboBox(parent=self.group_wypozyczenia)
+        self.combo_usun_gry.setEditable(True)
+        self.combo_usun_gry.setInsertPolicy(QtWidgets.QComboBox.InsertPolicy.NoInsert)
+        self.combo_usun_gry.setObjectName("combo_usun_gry")
+        self.layout_wyp.addWidget(self.combo_usun_gry)
+        
         
         self.btn_usun_gre = QtWidgets.QPushButton(parent=self.group_gry)
         self.btn_usun_gre.setObjectName("btn_usun_gre")
@@ -177,7 +184,8 @@ class Ui_MainWindow(object):
         self.inp_dodaj_platforma.setPlaceholderText(_translate("MainWindow", "Platforma (np. PC, PS5)..."))
         self.btn_dodaj_gre.setText(_translate("MainWindow", "Dodaj grę"))
         self.labelUsunGre.setText(_translate("MainWindow", "Usuń grę z bazy trwale:"))
-        self.inp_usun_gry_id.setPlaceholderText(_translate("MainWindow", "ID Gry do usunięcia..."))
+        # self.inp_usun_gry_id.setPlaceholderText(_translate("MainWindow", "ID Gry do usunięcia..."))
+        self.combo_usun_gry.setPlaceholderText(_translate("MainWindow", "Wpisz tytuł gry do usunięcia..."))
         self.btn_usun_gre.setText(_translate("MainWindow", "Usuń grę"))
         self.btn_hard_reset_baza.setText(_translate("MainWindow", "⚠️ Usuń wszystkie dane ⚠️"))
 
@@ -209,6 +217,10 @@ class WypozyczalniaApp(QtWidgets.QMainWindow, Ui_MainWindow):
         self.combo_wyszukaj_gre.clear()
         self.combo_wyszukaj_gre.addItem("--- Wybierz lub wyszukaj grę ---", None)
         
+        # usun_gry
+        self.combo_usun_gry.clear()
+        self.combo_usun_gry.addItem("--- Wybierz lub wyszukaj grę do usunięcia ---", None)  
+        
         gry_z_bazy = wypozyczalniaDB.pobierz_dostepne_gry()
         
         for wiersz in gry_z_bazy:
@@ -218,6 +230,7 @@ class WypozyczalniaApp(QtWidgets.QMainWindow, Ui_MainWindow):
             ilosc_info = f" | Sztuk: {wiersz[3]}" if len(wiersz) > 3 else ""
             
             self.combo_wyszukaj_gre.addItem(f"{tytul} ({platforma}){ilosc_info}", id_gry)
+            self.combo_usun_gry.addItem(f"{tytul} ({platforma}){ilosc_info}", id_gry)
 
     def akcja_odswiez(self):
         wypozyczenia = wypozyczalniaDB.pobierz_aktywne_wypozyczenia()
@@ -304,7 +317,7 @@ class WypozyczalniaApp(QtWidgets.QMainWindow, Ui_MainWindow):
             QMessageBox.warning(self, "Błąd", f"Nieudane dodawanie: {e}")
 
     def akcja_usun_gre(self):
-        id_gry = self.inp_usun_gry_id.text()
+        id_gry = self.combo_usun_gry.currentData()
         if not id_gry:
             return
             
@@ -315,7 +328,7 @@ class WypozyczalniaApp(QtWidgets.QMainWindow, Ui_MainWindow):
         except Exception as e:
             QMessageBox.warning(self, "Błąd", f"Coś chrupnęło: {e}")
             
-        self.inp_usun_gry_id.clear()
+        self.combo_usun_gry.setCurrentIndex(0)
         self.zaladuj_gry_do_wyszukiwarki()
         self.akcja_odswiez()
     
