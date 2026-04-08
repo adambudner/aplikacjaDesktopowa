@@ -84,7 +84,7 @@ class MainWindowUi(object):
         self.verticalLayoutRight.addWidget(self.group_wypozyczenia)
         
         # end
-        self.verticalLayoutRight.addWidget(self.group_gry)
+        # self.verticalLayoutRight.addWidget(self.group_gry)
         
         spacerItem2 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Expanding)
         self.verticalLayoutRight.addItem(spacerItem2)
@@ -97,7 +97,7 @@ class MainWindowUi(object):
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
     
-    def resantleUi(self, MainWindow):
+    def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "Zarządzanie Wypożyczalnią Gier"))
         # lewo
