@@ -115,12 +115,116 @@ class MainWindowUi(QtWidgets.QMainWindow):
         self.inp_usun_wyp_id.setPlaceholderText(_translate("MainWindow", "Podaj ID Wypożyczenia (z tabeli)..."))
         self.btn_usun_wyp.setText(_translate("MainWindow", "Zwróć grę"))     
         
+class App():
+    def __init__(self, imie):
+        super().__init__()
+        self.imie = imie
+        self.setupUi(self)
+        
+        # autocomplete
+        completer = QtWidgets.QCompleter(self.combo_wyszukaj_gre.model())
+        completer.setFilterMode(QtCore.Qt.MatchFlag.MatchContains)
+        completer.setCaseSensitivity(QtCore.Qt.CaseSensitivity.CaseInsensitive)
+        self.combo_wyszukaj_gre.setCompleter(completer)
+        
+        # akcje guziki
+        self.btn_refresh.clicked.connect(self.akcja_odswiez)
+        self.btn_show_games.clicked.connect(self.akcja_pokaz_gry)
+        self.btn_dodaj_wyp.clicked.connect(self.akcja_dodaj_wypozyczenie)
+        self.btn_usun_wyp.clicked.connect(self.akcja_usun_wypozyczenie)
+        self.btn_dodaj_gre.clicked.connect(self.akcja_dodaj_gre)
+        self.btn_usun_gre.clicked.connect(self.akcja_usun_gre)
+        self.btn_hard_reset_baza.clicked.connect(self.akcja_hard_reset_bazy)
+        
+        self.zaladuj_gry_do_wyszukiwarki()
+        self.akcja_odswiez()
+        
+    def zaladuj_gry_do_wyszukiwarki(self):
+        self.combo_wyszukaj_gre.clear()
+        self.combo_wyszukaj_gre.addItem("--- Wybierz lub wyszukaj grę ---", None)
+        
+        # usun_gry
+        self.combo_usun_gry.clear()
+        self.combo_usun_gry.addItem("--- Wybierz lub wyszukaj grę do usunięcia ---", None)  
+        
+        gry_z_bazy = wypozyczalniaDB.pobierz_dostepne_gry()
+        
+        for wiersz in gry_z_bazy:
+            id_gry = wiersz[0]
+            tytul = wiersz[1]
+            platforma = wiersz[2]
+            ilosc_info = f" | Sztuk: {wiersz[3]}" if len(wiersz) > 3 else ""
+            
+            self.combo_wyszukaj_gre.addItem(f"{tytul} ({platforma}){ilosc_info}", id_gry)
+            self.combo_usun_gry.addItem(f"{tytul} ({platforma}){ilosc_info}", id_gry)
+
+    def akcja_odswiez(self):
+        wypozyczenia = wypozyczalniaDB.pobierz_aktywne_wypozyczenia(self.imie)
+        
+        self.tabela.setRowCount(0)
+        self.tabela.setRowCount(len(wypozyczenia))
+        
+        for row_idx, row_data in enumerate(wypozyczenia):
+            for col_idx, value in enumerate(row_data):
+                self.tabela.setItem(row_idx, col_idx, QTableWidgetItem(str(value)))
+
+    def akcja_dodaj_wypozyczenie(self):
+        id_gry = self.combo_wyszukaj_gre.currentData()
+        
+        if id_gry is None or not self.imie:
+            QMessageBox.warning(self, "Błąd", "Wybierz grę i wpisz imię!")
+            return
+            
+        status, msg = wypozyczalniaDB.wypozycz_gre(self.imie, id_gry)
+        
+        if status:
+            QMessageBox.information(self, "Git", msg)
+            self.combo_wyszukaj_gre.setCurrentIndex(0) 
+            self.zaladuj_gry_do_wyszukiwarki() 
+            self.akcja_odswiez()
+        else:
+            QMessageBox.warning(self, "Ups", msg)
+
+    def akcja_usun_wypozyczenie(self):
+        id_wyp = self.inp_usun_wyp_id.text()
+        if not id_wyp:
+            return
+            
+        try:
+            wypozyczalniaDB.cursor.execute('SELECT id_gry FROM wypozyczenia WHERE id = ? AND data_zwrotu IS NULL', (id_wyp,))
+            wynik = wypozyczalniaDB.cursor.fetchone()
+            
+            if wynik:
+                id_gry = wynik[0]
+                data_zwrotu = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                
+                wypozyczalniaDB.cursor.execute('''
+                    UPDATE wypozyczenia 
+                    SET data_zwrotu = ? 
+                    WHERE id = ?
+                ''', (data_zwrotu, id_wyp))
+                
+                wypozyczalniaDB.cursor.execute('UPDATE gry SET ilosc = ilosc + 1 WHERE id = ?', (id_gry,))
+                
+                wypozyczalniaDB.conn.commit()
+                
+                QMessageBox.information(self, "Git", f"Zwrócono grę (Wypożyczenie ID: {id_wyp}). Zapas zwiększony o 1 szt.")
+                self.inp_usun_wyp_id.clear()
+                self.zaladuj_gry_do_wyszukiwarki() 
+                self.akcja_odswiez()
+            else:
+                QMessageBox.warning(self, "Błąd", "Nie znaleziono aktywnego wypożyczenia o tym ID!")
+        except Exception as e:
+            QMessageBox.warning(self, "Błąd", f"Coś poszło nie tak podczas zwrotu: {e}")
+
 
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
     app.setStyle("Fusion")
+    imie = "Adam"
     
-    # okno = App()
-    # okno.show()
+    
+    okno = App(imie)
+    okno.show()
     sys.exit(app.exec())
