@@ -43,6 +43,13 @@ class Ui_MainWindow(object):
         self.btn_refresh.setObjectName("btn_refresh")
         self.verticalLayoutLeft.addWidget(self.btn_refresh)
         
+        # show games btn
+        self.btn_show_games = QtWidgets.QPushButton(parent=self.centralwidget)
+        self.btn_show_games.setMinimumSize(QtCore.QSize(0, 40))
+        self.btn_show_games.setObjectName("btn_show_games")
+        self.verticalLayoutLeft.addWidget(self.btn_show_games)
+        
+        
         self.horizontalLayout.addLayout(self.verticalLayoutLeft)
         self.horizontalLayout.setStretch(0, 2)
         
@@ -165,10 +172,13 @@ class Ui_MainWindow(object):
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "Zarządzanie Wypożyczalnią Gier"))
+        # lewo
         self.labelTabela.setText(_translate("MainWindow", "<b>Aktualne wypożyczenia:</b>"))
         self.tabela.setHorizontalHeaderLabels(["ID Wypoż.", "Gra", "Klient", "Data od"])
         self.btn_refresh.setText(_translate("MainWindow", "🔄 Odśwież widok"))
+        self.btn_show_games.setText(_translate("MainWindow", "🎮 Pokaż gry"))
         
+        # prawo
         self.group_wypozyczenia.setTitle(_translate("MainWindow", "Zarządzanie Wypożyczeniami"))
         self.labelDodajWyp.setText(_translate("MainWindow", "Dodaj nowe wypożyczenie:"))
         self.combo_wyszukaj_gre.setPlaceholderText(_translate("MainWindow", "Wpisz tytuł gry, aby wyszukać..."))
@@ -178,6 +188,7 @@ class Ui_MainWindow(object):
         self.inp_usun_wyp_id.setPlaceholderText(_translate("MainWindow", "Podaj ID Wypożyczenia (z tabeli)..."))
         self.btn_usun_wyp.setText(_translate("MainWindow", "Usuń wypożyczenie (Zwrot)"))
         
+        # prawo - gry
         self.group_gry.setTitle(_translate("MainWindow", "Zarządzanie Bazą Gier"))
         self.labelDodajGre.setText(_translate("MainWindow", "Dodaj nową grę do bazy:"))
         self.inp_dodaj_tytul.setPlaceholderText(_translate("MainWindow", "Tytuł gry..."))
@@ -204,6 +215,7 @@ class WypozyczalniaApp(QtWidgets.QMainWindow, Ui_MainWindow):
         
         # akcje guziki
         self.btn_refresh.clicked.connect(self.akcja_odswiez)
+        self.btn_show_games.clicked.connect(self.akcja_pokaz_gry)
         self.btn_dodaj_wyp.clicked.connect(self.akcja_dodaj_wypozyczenie)
         self.btn_usun_wyp.clicked.connect(self.akcja_usun_wypozyczenie)
         self.btn_dodaj_gre.clicked.connect(self.akcja_dodaj_gre)
@@ -342,6 +354,14 @@ class WypozyczalniaApp(QtWidgets.QMainWindow, Ui_MainWindow):
                 self.akcja_odswiez()
             else:
                 QMessageBox.warning(self, "Ups", "Coś poszło nie tak")
+    
+    def akcja_pokaz_gry(self):
+        gry = wypozyczalniaDB.pobierz_dostepne_gry()
+        msg = "Dostępne gry:\n\n"
+        for gra in gry:
+            msg += f"ID: {gra[0]} | Tytuł: {gra[1]} | Platforma: {gra[2]} | Ilość: {gra[3]}\n"
+        QMessageBox.information(self, "Dostępne Gry", msg)
+        
 
 
 if __name__ == "__main__":
