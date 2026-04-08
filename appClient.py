@@ -27,6 +27,11 @@ class MainWindowUi(object):
         self.verticalLayoutLeft = QtWidgets.QVBoxLayout()
         self.verticalLayoutLeft.setObjectName("verticalLayoutLeft")
         
+        self.labelTabela = QtWidgets.QLabel(parent=self.centralwidget)
+        self.labelTabela.setObjectName("labelTabela")
+        self.verticalLayoutLeft.addWidget(self.labelTabela)
+        
+        
         self.tabela = QtWidgets.QTableWidget(parent=self.centralwidget)
         self.tabela.setColumnCount(4)
         self.tabela.setObjectName("tabela")
@@ -129,12 +134,8 @@ class App(QtWidgets.QMainWindow, MainWindowUi):
         
         # akcje guziki
         self.btn_refresh.clicked.connect(self.akcja_odswiez)
-        self.btn_show_games.clicked.connect(self.akcja_pokaz_gry)
         self.btn_dodaj_wyp.clicked.connect(self.akcja_dodaj_wypozyczenie)
         self.btn_usun_wyp.clicked.connect(self.akcja_usun_wypozyczenie)
-        self.btn_dodaj_gre.clicked.connect(self.akcja_dodaj_gre)
-        self.btn_usun_gre.clicked.connect(self.akcja_usun_gre)
-        self.btn_hard_reset_baza.clicked.connect(self.akcja_hard_reset_bazy)
         
         self.zaladuj_gry_do_wyszukiwarki()
         self.akcja_odswiez()
@@ -142,10 +143,6 @@ class App(QtWidgets.QMainWindow, MainWindowUi):
     def zaladuj_gry_do_wyszukiwarki(self):
         self.combo_wyszukaj_gre.clear()
         self.combo_wyszukaj_gre.addItem("--- Wybierz lub wyszukaj grę ---", None)
-        
-        # usun_gry
-        self.combo_usun_gry.clear()
-        self.combo_usun_gry.addItem("--- Wybierz lub wyszukaj grę do usunięcia ---", None)  
         
         gry_z_bazy = wypozyczalniaDB.pobierz_dostepne_gry()
         
@@ -156,7 +153,6 @@ class App(QtWidgets.QMainWindow, MainWindowUi):
             ilosc_info = f" | Sztuk: {wiersz[3]}" if len(wiersz) > 3 else ""
             
             self.combo_wyszukaj_gre.addItem(f"{tytul} ({platforma}){ilosc_info}", id_gry)
-            self.combo_usun_gry.addItem(f"{tytul} ({platforma}){ilosc_info}", id_gry)
 
     def akcja_odswiez(self):
         wypozyczenia = wypozyczalniaDB.pobierz_aktywne_wypozyczenia(self.imie)
