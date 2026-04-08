@@ -137,7 +137,7 @@ class Ui_MainWindow(object):
         self.combo_usun_gry.setEditable(True)
         self.combo_usun_gry.setInsertPolicy(QtWidgets.QComboBox.InsertPolicy.NoInsert)
         self.combo_usun_gry.setObjectName("combo_usun_gry")
-        self.layout_wyp.addWidget(self.combo_usun_gry)
+        self.layout_gry.addWidget(self.combo_usun_gry)
         
         
         self.btn_usun_gre = QtWidgets.QPushButton(parent=self.group_gry)
