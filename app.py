@@ -10,7 +10,6 @@ DB_PATH = os.path.join(BASE_DIR, 'wypozyczalnia.sqlite3')
 from db import WypozyczalniaGier
 wypozyczalniaDB = WypozyczalniaGier(nazwa_bazy=DB_PATH)
 
-# ui z designera
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
