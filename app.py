@@ -322,7 +322,7 @@ class WypozyczalniaApp(QtWidgets.QMainWindow, Ui_MainWindow):
             self.inp_dodaj_ilosc.setValue(1) 
             self.zaladuj_gry_do_wyszukiwarki()
         except AttributeError:
-            QMessageBox.warning(self, "Błąd", "Upewnij się, że w db.py funkcja naprawdę nazywa się 'dodaj_gra_z_iloscia'!")
+            QMessageBox.warning(self, "Błąd", "ups")
         except Exception as e:
             QMessageBox.warning(self, "Błąd", f"Nieudane dodawanie: {e}")
 
