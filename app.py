@@ -257,13 +257,13 @@ class WypozyczalniaApp(QtWidgets.QMainWindow, Ui_MainWindow):
         imie = self.inp_wyp_imie.text()
         
         if id_gry is None or not imie:
-            QMessageBox.warning(self, "Błąd", "Wybierz grę i wpisz imię!")
+            QMessageBox.warning(self, "Błąd", "Wybierz grę i wpisz imię.")
             return
             
         status, msg = wypozyczalniaDB.wypozycz_gre(imie, id_gry)
         
         if status:
-            QMessageBox.information(self, "Git", msg)
+            QMessageBox.information(self, "Powodzenie", msg)
             self.combo_wyszukaj_gre.setCurrentIndex(0) 
             self.inp_wyp_imie.clear()
             self.zaladuj_gry_do_wyszukiwarki() 
@@ -294,12 +294,12 @@ class WypozyczalniaApp(QtWidgets.QMainWindow, Ui_MainWindow):
                 
                 wypozyczalniaDB.conn.commit()
                 
-                QMessageBox.information(self, "Git", f"Zwrócono grę (Wypożyczenie ID: {id_wyp}). Zapas zwiększony o 1 szt.")
+                QMessageBox.information(self, "Powodzenie", f"Zwrócono grę (Wypożyczenie ID: {id_wyp}). Zapas zwiększony o 1 szt.")
                 self.inp_usun_wyp_id.clear()
                 self.zaladuj_gry_do_wyszukiwarki() 
                 self.akcja_odswiez()
             else:
-                QMessageBox.warning(self, "Błąd", "Nie znaleziono aktywnego wypożyczenia o tym ID!")
+                QMessageBox.warning(self, "Błąd", "Nie znaleziono aktywnego wypożyczenia o tym ID.")
         except Exception as e:
             QMessageBox.warning(self, "Błąd", f"Coś poszło nie tak podczas zwrotu: {e}")
 
@@ -309,13 +309,12 @@ class WypozyczalniaApp(QtWidgets.QMainWindow, Ui_MainWindow):
         ilosc = self.inp_dodaj_ilosc.value() 
         
         if not tytul or not platforma:
-            QMessageBox.warning(self, "Błąd", "Wpisz tytuł i platformę!")
+            QMessageBox.warning(self, "Błąd", "Wpisz tytuł i platformę.")
             return
             
-        # Zmieniona nazwa funkcji na Twoją
         try:
             status, msg = wypozyczalniaDB.dodaj_gre_z_iloscia(tytul, platforma, ilosc)
-            QMessageBox.information(self, "Git", msg)
+            QMessageBox.information(self, "Powodzenie", msg)
             
             self.inp_dodaj_tytul.clear()
             self.inp_dodaj_platforma.clear()
@@ -334,7 +333,7 @@ class WypozyczalniaApp(QtWidgets.QMainWindow, Ui_MainWindow):
         try:
             wypozyczalniaDB.cursor.execute('DELETE FROM gry WHERE id = ?', (id_gry,))
             wypozyczalniaDB.conn.commit()
-            QMessageBox.information(self, "Git", "Gra wyparowała z bazy.")
+            QMessageBox.information(self, "Powodzenie", "Gra usunięta z bazy.")
         except Exception as e:
             QMessageBox.warning(self, "Błąd", f"Coś chrupnęło: {e}")
             
